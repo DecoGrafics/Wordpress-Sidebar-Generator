@@ -3,7 +3,7 @@ Contributors: _smartik_
 Tags: sidebar, widget, generator, custom, unlimited
 Requires at least: 3.2
 Tested up to: 4.1.1
-Stable tag: 3.0
+Stable tag: 3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,7 @@ if(function_exists('dynamic_sidebar') && dynamic_sidebar('sidebarID')) :
 </pre>
 
 == Installation ==
+
 1. Upload the `smk-sidebar-generator` folder to the `/wp-content/plugins/` directory
 2. Activate the SMK Sidebar Generator plugin through the 'Plugins' menu in WordPress
 3. Configure the plugin by going to the SMK Sidebars menu that appears in your admin menu
@@ -68,10 +69,15 @@ if(function_exists('dynamic_sidebar') && dynamic_sidebar('sidebarID')) :
 
 
 == Changelog ==
+
+= 3.1 =
+* Added localization support(if you want to translate it in your language, create a pull requests on Github).
+* Added shortcode with ID to each sidebar.
+
 = 3.0 =
 * **Complete rewrite from scratch.** The plugin now allows to create an unlimited number of sidebars without the need to touch a single line of code in your theme.
 * Now you can use conditions to apply the sidebar on any page, post ar CPT you wish. _Soon will be added support for taxonomies, 404 page and other(please suggest)_.
-* The widgets njow use the theme style and tags. That means the newly generated sidebars will look good on any theme, no need for additional styling.
+* The widgets now use the theme style and tags. That means the newly generated sidebars will look good on any theme, no need for additional styling.
 * Modular code. You can create and register your own conditions. That's mainly not required but can be handy for some developers.
 
 = 2.3.2 =
