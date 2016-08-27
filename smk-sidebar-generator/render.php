@@ -406,7 +406,7 @@ if( class_exists('Smk_Sidebar_Generator_Abstract')) {
 			.'
 			<br />
 			<label>'. __('Shortcode:', 'smk-sidebar-generator') .'</label>
-			<code class="smk-sidebar-shortcode">smk_sidebar="'. $sidebar_data['id'] .'"</code>
+			<code class="smk-sidebar-shortcode">[smk_sidebar="'. $sidebar_data['id'] .'"]</code>
 			</div>';
 		}
 

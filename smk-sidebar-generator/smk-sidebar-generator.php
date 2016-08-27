@@ -4,8 +4,8 @@
  * Plugin URI:  https://github.com/Smartik89/Wordpress-Sidebar-Generator
  * Description: Generate an unlimited number of sidebars and assign them to any page using the conditional options without touching a single line of code. 
  * Author:      Smartik
- * Version:     3.1
- * Author URI:  http://smartik.ws/
+ * Version:     3.2
+ * Author URI:  https://github.com/Smartik89/
  * Licence:     GPLv2
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  * Copyright:   (c) 2015 Smartik. All rights reserved
