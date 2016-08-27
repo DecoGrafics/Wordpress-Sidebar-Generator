@@ -1,26 +1,14 @@
 === SMK Sidebar Generator ===
 Contributors: _smartik_
-Tags: sidebar, widget, generator, custom, unlimited
-Requires at least: 3.2
-Tested up to: 4.1.1
-Stable tag: 3.1
+Tags: sidebar, widget, generator, custom, unlimited, sidebars, widgets, unlimited, ultimate, visibility, hide, show, hidden
+Requires at least: 4.0
+Tested up to: 4.6
+Stable tag: 3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 This plugin generates as many sidebars as you need. Then allows you to place them on any page you wish.
 
-== Description ==
-This plugin generates as many sidebars as you need. Then allows you to place them on any page you wish.
-
-#### Version 3.0 is here!
-The new version 3.x has many advantages compared with the old 2.x. First and the most important is that it remove the need to add some special code to the theme in order to display the generated sidebar. That's because it now can override the default sidebar and apply special conditions for any page on your site.
-
-
-<!--**Demo video:** http://youtu.be/fluNdMnSCKA-->
-
-<!--iframe width="560" height="315" src="//www.youtube.com/embed/fluNdMnSCKA" frameborder="0" allowfullscreen></iframe-->
-
-* Author : Smartik - http://smartik.ws/
 * License : GPLv2
 * Development branch: https://github.com/Smartik89/Wordpress-Sidebar-Generator
 * Issue tracker: https://github.com/Smartik89/Wordpress-Sidebar-Generator/issues
@@ -49,8 +37,7 @@ if(function_exists('smk_sidebar'){
 </pre>
 **Display a sidebar using wp native function:**
 <pre>
-if(function_exists('dynamic_sidebar') && dynamic_sidebar('sidebarID')) : 
-	endif;
+dynamic_sidebar('sidebarID');
 </pre>
 
 **Display a sidebar using built-in shortcode:**
@@ -69,6 +56,10 @@ if(function_exists('dynamic_sidebar') && dynamic_sidebar('sidebarID')) :
 
 
 == Changelog ==
+
+= 3.2 =
+* Compatibility with the latest WordPress version(4.6).
+* Added square rackets to each sidebar shortcode.
 
 = 3.1 =
 * Added localization support(if you want to translate it in your language, create a pull requests on Github).
