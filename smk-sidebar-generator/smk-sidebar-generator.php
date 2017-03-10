@@ -140,7 +140,7 @@ function smk_sidebar_shortcode( $atts ) {
 add_shortcode( 'smk_sidebar', 'smk_sidebar_shortcode' );
 
 
-require_once plugin_dir_path( __FILE__ ) . 'autoloader.class.php';
+require_once plugin_dir_path( __FILE__ ) . 'autoloader.php';
 
 
 smk_register_condition( 'SmkSidebar\ConditionCpt' );
