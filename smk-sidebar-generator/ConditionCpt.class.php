@@ -1,9 +1,11 @@
 <?php
-class Smk_Sidebar_Generator_Condition_Cpt extends Smk_Sidebar_Generator_Condition{
+namespace SmkSidebar;
+
+class ConditionCpt extends Condition{
 	public $type = 'post_type';
 
 	public function __construct(){
-		$this->name = __('Post types', 'smk-sidebar-generator');
+		$this->name = __('is post type', 'smk-sidebar-generator');
 	}
 
 	// key => value

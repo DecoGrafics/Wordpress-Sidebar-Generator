@@ -77,6 +77,10 @@
 				return text;
 			},
 
+			hideNoSidebarsNotice: function(){
+				$('#no-sidebars-notice').slideUp('fast');
+			},
+
 			// Add new sidebar
 			addNew: function(){
 
@@ -121,12 +125,18 @@
 					// Close other accordion sections
 					smkSidebarGenerator.closeAllAccordionSections();
 
+					template.find(".conditions-all").hide();
+
 					// Append the new sidebar as a new accordion section and slide down it
 					template.appendTo('#smk-sidebars ul.connected-sidebars-lists').addClass("open").hide();
 					template.find(".accordion-section-content").show();
 					template.slideDown('fast');
 
 					$('#smk-sidebar-generator-counter').val( counter );
+
+					smkSidebarGenerator.hideNoSidebarsNotice();
+					
+					$(document).trigger('smk-sidebar-js-refresh');
 
 					event.stopImmediatePropagation();
 				}).disableSelection();
@@ -219,6 +229,25 @@
 						cloned_elem      = $('.smk-sidebars-condition-template .condition-parent').clone(),
 						max_index        = 0;
 
+
+					// If we have incomplete conditions, do no proceed but instead ask to modify them
+					if( condition_all.find('.condition-if').filter( function() { 
+							var _t = $(this);
+							var $exists = _t.val() === 'none'; 
+							if( $exists ){
+								_t.parents('.condition-parent').addClass('warning');
+								setTimeout(function(){
+									_t.parents('.condition-parent').removeClass('warning');
+								}, 300)
+							}
+							return $exists;
+						}).length > 0
+					){
+						// console.log( 'nones exist' );
+						return;
+					}
+
+					// All nice, create the condition
 					condition_all.find('select').each(function(){
 					var 
 						name       = $(this).attr('name'),
@@ -240,9 +269,12 @@
 
 					cloned_elem.hide(); //Hide new condition
 					condition_all.append( cloned_elem ); //Appent it
-					cloned_elem.slideDown('fast'); //... and finally slide it down
+					cloned_elem.slideDown('fast'); //... and finally slide it 
+
 
 					smkSidebarGenerator.sortableconditions();
+					
+					$(document).trigger('smk-sidebar-js-refresh');
 				});
 			},
 			
@@ -261,8 +293,8 @@
 			enableConditions: function(){
 				$('#smk-sidebars').on('change', '.smk-sidebar-enable-conditions', function(){
 					var _t = $(this),
-					    _crConditions  = _t.parents('.smk-sidebar-row').children('.created-conditions'),
-					    _conditionsBtn = _t.parents('.smk-sidebar-row').children('.condition-add');
+					    _crConditions  = _t.parents('.conditions-all').children('.created-conditions'),
+					    _conditionsBtn = _t.parents('.conditions-all').children('.condition-add');
 					if( _t.is( ":checked" ) ){
 						_crConditions.removeClass('disabled-conditions');
 						_conditionsBtn.removeAttr('disabled', 'disabled');
@@ -287,6 +319,72 @@
 				// blocks.disableSelection();
 			},
 
+			//Allow to use condition only if the user select the sidebar to replace
+			allowConditions: function(){
+				$('#smk-sidebars').find('.sidebars-to-replace-select').filter( function() { 
+					var _t = $(this);
+					if( ! _t.val() ){
+						_t.parents('li').find('.conditions-all').hide();
+					}
+				});
+
+				$('#smk-sidebars').on('change', '.sidebars-to-replace-select', function() { 
+					var _t = $(this),
+					cond_block = _t.parents('li').find('.conditions-all');
+					if( _t.val() ){
+						cond_block.show();
+					}
+					else{
+						cond_block.hide();
+					}
+				});
+			},
+
+
+			tooltip: function(){
+				Tipped.create('.tip', {
+					// position: 'right'
+				});
+			},
+			
+			select2: function(){
+				$('.smk-sidebars-list select').select2();
+
+				$(document).on( 'smk-sidebar-js-refresh', function(){
+					$('.smk-sidebars-list select').select2();
+				});
+			},
+
+			sidebarTabs: function(){
+				var tabs_blocks = $('.sidebar-info-tabs');
+				$.each( tabs_blocks, function( key, value ){
+					var _t = $(this);
+					var active_tab = _t.find('.sidebar-info-tab.active');
+					_t.find( '.tabs [data-target]' ).hide()
+					
+					if( active_tab.length > 0 ){
+						var active = active_tab.data('id')
+						_t.find( '.tabs [data-target="'+ active +'"]' ).show();
+					}
+					else{
+						_t.find( '.sidebar-info-tab[data-id="name"]' ).addClass('active');
+						_t.find( '.tabs [data-target="name"]' ).show();
+					}
+				});
+
+				$( '#smk-sidebars' ).on('click', '.sidebar-info-tab', function(){
+					var _t = $(this);
+					var _id = _t.data('id');
+					var tabs_blocks = _t.parents('.sidebar-info-tabs');
+
+					tabs_blocks.find('.sidebar-info-tab').removeClass('active');
+					_t.addClass('active');
+
+					tabs_blocks.find( '.tabs [data-target]' ).hide()
+					tabs_blocks.find( '.tabs [data-target="'+ _id +'"]' ).show()
+				});
+			},
+
 			// Init all
 			init: function(){
 				smkSidebarGenerator.accordion();
@@ -300,6 +398,10 @@
 				smkSidebarGenerator.conditionRemove();
 				smkSidebarGenerator.enableConditions();
 				smkSidebarGenerator.sortableconditions();
+				smkSidebarGenerator.allowConditions();
+				smkSidebarGenerator.tooltip();
+				smkSidebarGenerator.select2();
+				smkSidebarGenerator.sidebarTabs();
 			},
 
 		};

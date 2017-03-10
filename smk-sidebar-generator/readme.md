@@ -1,5 +1,14 @@
 This plugin generates as many sidebars as you need. Then allows you to place them on any page you wish.
 
+#### Version 3.0 is here!
+The new version 3.x has many advantages compared with the old 2.x. First and the most important is that it remove the need to add some special code to the theme in order to display the generated sidebar. That's because it now can override the default sidebar and apply special conditions for any page on your site.
+
+
+<!--**Demo video:** http://youtu.be/fluNdMnSCKA-->
+
+<!--iframe width="560" height="315" src="//www.youtube.com/embed/fluNdMnSCKA" frameborder="0" allowfullscreen></iframe-->
+
+* Author : Smartik - http://smartik.ws/
 * License : GPLv2
 * Development branch: https://github.com/Smartik89/Wordpress-Sidebar-Generator
 * Issue tracker: https://github.com/Smartik89/Wordpress-Sidebar-Generator/issues
@@ -28,7 +37,8 @@ if(function_exists('smk_sidebar'){
 </pre>
 **Display a sidebar using wp native function:**
 <pre>
-dynamic_sidebar('sidebarID');
+if(function_exists('dynamic_sidebar') && dynamic_sidebar('sidebarID')) : 
+	endif;
 </pre>
 
 **Display a sidebar using built-in shortcode:**
@@ -43,10 +53,6 @@ dynamic_sidebar('sidebarID');
 3. Configure the plugin by going to the SMK Sidebars menu that appears in your admin menu
 
 == Changelog ==
-
-= 3.2 =
-* Compatibility with the latest WordPress version(4.6).
-* Added square rackets to each sidebar shortcode.
 
 = 3.1 =
 * Added localization support(if you want to translate it in your language, create a pull requests on Github).

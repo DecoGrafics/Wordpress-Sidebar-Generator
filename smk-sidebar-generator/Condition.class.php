@@ -1,5 +1,7 @@
 <?php
-abstract class Smk_Sidebar_Generator_Condition{
+namespace SmkSidebar;
+
+abstract class Condition{
 	public $type;
 	public $name;
 

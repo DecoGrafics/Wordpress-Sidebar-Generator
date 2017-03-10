@@ -1,15 +1,17 @@
 === SMK Sidebar Generator ===
 Contributors: _smartik_
-Tags: sidebar, widget, generator, custom, unlimited, sidebars, widgets, unlimited, ultimate, visibility, hide, show, hidden
-Requires at least: 4.0
-Tested up to: 4.6
-Stable tag: 3.2
+Tags: sidebar, widget, generator, custom, unlimited, sidebars, widgets, conditions, replace
+Requires at least: 4.4
+Tested up to: 4.7
+Stable tag: 4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 This plugin generates as many sidebars as you need. Then allows you to place them on any page you wish.
 
-* License : GPLv2
+== Description ==
+This plugin generates as many sidebars as you need. Then allows you to place them on any page you wish.
+
 * Development branch: https://github.com/Smartik89/Wordpress-Sidebar-Generator
 * Issue tracker: https://github.com/Smartik89/Wordpress-Sidebar-Generator/issues
 
@@ -18,32 +20,6 @@ This plugin generates as many sidebars as you need. Then allows you to place the
 * Replace default theme sidebars using the conditions or globaly just by selecting the sidebar that you want to replace.
 * Show the generated sidebars on any page you wish without touching a single line of code in your theme.
 * Drag to sort sidebar position.
-
-####How to install this plugin?
-Like any other Wordpress plugin. <br />
-Drop `smk-sidebar-generator` to `wp-content/plugins/`.<br />
-More info here: http://codex.wordpress.org/Managing_Plugins#Installing_Plugins
-
-####Backward compatibility. 
-
-Because you probably still need them, these functions are still here to not break your site.
-**Note:** The following code is for vesion 2.x In the latest version of this plugin they are not required. Do not use them anymore!!!
-
-**Display a sidebar using `smk_sidebar` function:**
-<pre>
-if(function_exists('smk_sidebar'){
- smk_sidebar('sidebarID');
-}
-</pre>
-**Display a sidebar using wp native function:**
-<pre>
-dynamic_sidebar('sidebarID');
-</pre>
-
-**Display a sidebar using built-in shortcode:**
-<pre>
-[smk_sidebar id="sidebarID"]
-</pre>
 
 == Installation ==
 
@@ -57,9 +33,13 @@ dynamic_sidebar('sidebarID');
 
 == Changelog ==
 
-= 3.2 =
-* Compatibility with the latest WordPress version(4.6).
-* Added square rackets to each sidebar shortcode.
+= 4.0 =
+* Bug fix: Incorect shortcode display. Added square brackets and the missing `id=""` attribute.
+* Improvement: "Add new" button has been moved down right before the sidebars list.
+* Improvement: Added a notice where the sidebars list is empty.
+* Improvement: Implemented a tooltip plugin to provide help tips easier.
+* Improvement: Implemented select2 plugin. Now the interface is more user friendly.
+* Improvement: The plugin has been moved from a subpage to a top level admin page.
 
 = 3.1 =
 * Added localization support(if you want to translate it in your language, create a pull requests on Github).

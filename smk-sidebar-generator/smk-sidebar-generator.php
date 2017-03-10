@@ -4,8 +4,8 @@
  * Plugin URI:  https://github.com/Smartik89/Wordpress-Sidebar-Generator
  * Description: Generate an unlimited number of sidebars and assign them to any page using the conditional options without touching a single line of code. 
  * Author:      Smartik
- * Version:     3.2
- * Author URI:  https://github.com/Smartik89/
+ * Version:     4.0
+ * Author URI:  http://smartik.ws/
  * Licence:     GPLv2
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  * Copyright:   (c) 2015 Smartik. All rights reserved
@@ -101,9 +101,7 @@ Smk Sidebar function
 -------------------------------------------------------------------------------
 */
 function smk_sidebar($id){
-	if(function_exists('dynamic_sidebar') && dynamic_sidebar($id)) : 
-	endif;
-	return true;
+	dynamic_sidebar($id);
 }
 
 /*
@@ -133,42 +131,25 @@ Shortcode
 */
 // [smk_sidebar id="X"] //X is the sidebar ID
 function smk_sidebar_shortcode( $atts ) {
-	
 	extract( shortcode_atts( array(
 		'id' => null,
 	), $atts ) );
+
 	smk_sidebar($id);
 }
 add_shortcode( 'smk_sidebar', 'smk_sidebar_shortcode' );
 
-/* Plugin path
-------------------------------------------------*/
-$path = plugin_dir_path( __FILE__ );
 
-/* HTML helper
-------------------------------------------------*/
-require_once $path . 'html.php';
+require_once plugin_dir_path( __FILE__ ) . 'autoloader.class.php';
 
-/* Conditions
-------------------------------------------------*/
-require_once $path . 'condition.php';
-require_once $path . 'condition-cpt.php';
 
-/* Init conditions
-------------------------------------------------*/
-smk_register_condition( 'Smk_Sidebar_Generator_Condition_Cpt' );
-
-/* Plugin work
-------------------------------------------------*/
-require_once $path . 'abstract.php';
-require_once $path . 'render.php';
-require_once $path . 'apply.php';
+smk_register_condition( 'SmkSidebar\ConditionCpt' );
 
 /* Init plugin
 ------------------------------------------------*/
-$smk_sidebar_generator = new Smk_Sidebar_Generator;
-$smk_sidebar_generator->init();
+$generator = new SmkSidebar\Generator;
+$generator->init();
 
 /* Apply conditions
 ------------------------------------------------*/
-$applySidebars = new Smk_Sidebar_Generator_Apply;
+new SmkSidebar\Apply;
