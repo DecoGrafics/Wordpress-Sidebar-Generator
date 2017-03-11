@@ -33,6 +33,24 @@ function smk_sidebar_version(){
 }
 
 /**
+ * Plugin root path
+ *
+ * @return string 
+ */
+function smk_sidebar_path(){
+	return plugin_dir_path( __FILE__ );
+}
+
+/**
+ * Plugin root URI
+ *
+ * @return string 
+ */
+function smk_sidebar_uri(){
+	return plugin_dir_url( __FILE__ );
+}
+
+/**
  * All conditions
  *
  * All condtions will be accessible from this function

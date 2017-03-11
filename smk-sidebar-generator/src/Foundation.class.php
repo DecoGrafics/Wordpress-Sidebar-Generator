@@ -375,7 +375,7 @@ abstract class Foundation {
 	 * @return string 
 	 */
 	public function path(){
-		return plugin_dir_path( __FILE__ );
+		return smk_sidebar_path( __FILE__ );
 	}
 
 	//------------------------------------//--------------------------------------//
@@ -388,7 +388,7 @@ abstract class Foundation {
 	 * @return string 
 	 */
 	public function uri(){
-		return plugin_dir_url( __FILE__ );
+		return smk_sidebar_uri( __FILE__ );
 	}
 
 	//------------------------------------//--------------------------------------//
