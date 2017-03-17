@@ -11,16 +11,19 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 This plugin generates as many sidebars as you need. Then allows you to place them on any page you wish.
 
 == Description ==
-This plugin generates as many sidebars as you need. Then allows you to place them on any page you wish.
+This plugin generates as many sidebars as you need. Then allows you to place them on any page you wish. "Sidebar Generator by ZeroWP", formerly known as "SMK Sidebar Generator", is a new version that comes with many improvements. The version 4.x includes bug fixes and more options. Now it's possible to assign a sidebar on any page(cpt, taxonomies, 404 page, search result, etc.). Also, developers have the option to extend the plugin using the new filter/action hooks. Enjoy this plugin that it's free forever.
 
 * Development branch: https://github.com/ZeroWP/Wordpress-Sidebar-Generator
 * Issue tracker: https://github.com/ZeroWP/Wordpress-Sidebar-Generator/issues
 
 ####Features:
-* Unlimited number of sidebars.
-* Replace default theme sidebars using the conditions or globaly just by selecting the sidebar that you want to replace.
-* Show the generated sidebars on any page you wish without touching a single line of code in your theme.
-* Drag to sort sidebar position.
+* Create as many sidebars as you want. Unlimited, really!
+* Replace static sidebars that are defined in current theme or other plugins without touching a single line of code.
+* Use conditions to replace the static sidebars. Using conditions gives you the possibility to decide exactly how the replacements occurs.
+* Drag to sort sidebar order and conditions.
+* Possibility to show the generated sidebars using a simple shortcode.
+* Possibility to show the generated sidebars using the WP function `dynamic_sidebar` or its alias 'smk_sidebar`.
+* Lightweight. It does not inject any scripts or styles on front end and most of the code is loaded only in backend when needed.
 
 == Installation ==
 
