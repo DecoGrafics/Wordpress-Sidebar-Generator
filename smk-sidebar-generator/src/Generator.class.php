@@ -71,13 +71,34 @@ class Generator extends Foundation {
 		submit_button();
 		$this->pageClose();
 
+		//Filtered conditions
+		$conditions = array();
+		foreach ($this->allGeneratedSidebars() as $sidebar_id => $sidebar) {
+			if( !empty($sidebar['conditions']) ){
+				foreach ($sidebar['conditions'] as $condition) {
+					if( !empty($condition['if']) && !empty($condition['equalto']) && $condition['if'] !== 'none' ){
+						$conditions[ $condition['if'] ][] = array(
+							'replace' => $sidebar['replace'],
+							'with' => $sidebar_id,
+							'equalto' => $condition['equalto'],
+						);
+					}
+				}
+			}
+		}
+
+		$this->debug( $conditions, 'Filtered Conditions' );
+
+
 
 		// Debug start
-		$this->debug( $this->allStaticSidebars(), 'All static sidebars' );
+		// $this->debug( $this->allStaticSidebars(), 'All static sidebars' );
 		$this->debug( $this->allGeneratedSidebars(), 'All generated sidebars' );
-		global $sidebars_widgets;
-		$this->debug( $sidebars_widgets, 'All sidebars and their widgets' );
-		$this->debug( smk_sidebar_conditions_filter(), 'All conditions' );
+		// global $sidebars_widgets;
+		// $this->debug( $sidebars_widgets, 'All sidebars and their widgets' );
+		// $this->debug( smk_sidebar_conditions_filter(), 'All conditions' );
+
+
 	}
 
 	//------------------------------------//--------------------------------------//
@@ -194,7 +215,7 @@ class Generator extends Foundation {
 						</div>
 					</div>';
 
-					$the_sidebar .= '<div class="grid-7">'.
+					$the_sidebar .= '<div class="grid-7 sidebar-to-replace-container">'.
 						$this->fieldToReplace($name, $sidebar_data)
 					.'</div>';
 
@@ -204,15 +225,11 @@ class Generator extends Foundation {
 					// Conditions
 					$the_sidebar .= '<div class="conditions-all grid-12">';
 
-						$conditions_checked = isset( $sidebar_data['enable-conditions'] ) ? ' checked="checked"' : '';
-						$the_sidebar .= '<label>
-							<input type="checkbox" name="'. $name. '[enable-conditions]" value="enabled" '. $conditions_checked .' class="smk-sidebar-enable-conditions" />'.  
-							__('Enable conditions:', 'smk-sidebar-generator')
+						$the_sidebar .= '<label>'.  
+							__('Replace the sidebars only if it meets the following conditions:', 'smk-sidebar-generator')
 						.'</label>';
 
-
-						$disbled_conditions = empty($conditions_checked) ? ' disabled-conditions' : '';
-						$the_sidebar .= '<div class="created-conditions'. $disbled_conditions .'">';
+						$the_sidebar .= '<div class="created-conditions">';
 							if( !empty($sidebar_data['conditions']) ){
 								foreach ( (array) $sidebar_data['conditions'] as $index => $condition) {
 									$the_sidebar .= $this->aSingleCondition($name, $sidebar_data, $index, $condition['if']);
@@ -223,8 +240,18 @@ class Generator extends Foundation {
 							}
 						$the_sidebar .= '</div>'; //.created-conditions
 					
-					$disbled_conditions_btn = empty($conditions_checked) ? ' disabled="disabled"' : '';
-					$the_sidebar .= ' <button class="condition-add button"'. $disbled_conditions_btn .' data-name="'. $name .'" data-sidebar-id="'. $sidebar_data['id'] .'">'. __('Add condition', 'smk-sidebar-generator') .'</button>';
+					$the_sidebar .= '<div class="smk-sidebar-row sbg-clearfix">';
+						$the_sidebar .= '<div class="grid-12">';
+							$the_sidebar .= 'Condition for: ';
+							$the_sidebar .= $this->fieldConditionSelector();
+							$the_sidebar .= ' <button class="condition-add button" data-name="'. $name .'" data-sidebar-id="'. $sidebar_data['id'] .'">'. 
+								__('Add condition', 'smk-sidebar-generator') 
+							.'</button>';
+						$the_sidebar .= '</div>';
+					$the_sidebar .= '</div>';
+					
+
+
 					$the_sidebar .= '</div>'; //.conditions-all
 				$the_sidebar .= '</div>'; //.smk-sidebar-row
 
@@ -247,6 +274,12 @@ class Generator extends Foundation {
 
 		$class    = ( !empty( $settings['class'] ) ) ? ' '. $settings['class'] : '';
 		if( $part == 'open' ){
+
+			$signs = '<span class="info-signs">';
+				$signs .= '<span title="'. __( 'Replaces at least one sidebar', 'smk-sidebar-generator' ) .'" data-info="replaces" class="dashicons dashicons-visibility"></span>';
+				$signs .= '<span title="'. __( 'Conditions are enabled', 'smk-sidebar-generator' ) .'" data-info="has_conditions" class="dashicons dashicons-filter"></span>';
+			$signs .= '</span>';
+
 			$the_sidebar = '
 			<li id="'. $sidebar_data['id'] .'" class="control-section accordion-section'. $class .'">
 				<h3 class="accordion-section-title hndle">
@@ -257,6 +290,7 @@ class Generator extends Foundation {
 						<span class="smk-delete-sidebar">'. __('Delete', 'smk-sidebar-generator') .'</span>
 						<span class="smk-restore-sidebar">'. __('Restore', 'smk-sidebar-generator') .'</span>
 					</div>
+					'. $signs .'
 				</h3>
 				<div class="accordion-section-content" style="display: none;">
 					<div class="inside">';
@@ -399,7 +433,7 @@ class Generator extends Foundation {
 				array(
 					'multiple' => 'multiple',
 					'options'  => $static_sidebars,
-					'size'     => 9,
+					'size'     => 1,
 					'class'    => array( 'sidebars-to-replace-select' ),
 					'style'    => 'width: 100%',
 				)
@@ -419,7 +453,67 @@ class Generator extends Foundation {
 	 */
 	public function fieldConditionMain($name, $sidebar_data, $index = 0){
 
-		$options = array( 'none' => __('None', 'smk-sidebar-generator') );
+		$saved = ! empty( $sidebar_data['conditions'][ absint( $index ) ]['if'] ) ? 
+		            $sidebar_data['conditions'][ absint( $index ) ]['if'] : '';
+
+		return '<span class="condition-label">'. __('Replace if', 'smk-sidebar-generator') .' </span>'.
+			$this->html->input(
+				'', // ID
+				$name. '[conditions]['. absint( $index ) .'][if]', 
+				$saved, 
+				array(
+					'class' => array('cond-field', 'condition-if'),
+					'style'    => 'width: 100%',
+				)
+			);
+	}
+	// public function fieldConditionMain($name, $sidebar_data, $index = 0){
+
+	// 	$options = array( 'none' => __('None', 'smk-sidebar-generator') );
+	// 	$all_conditions = smk_sidebar_conditions_filter();
+	// 	if( !empty($all_conditions) && is_array($all_conditions) ){
+	// 		foreach ($all_conditions as $type => $class) {
+	// 			if( class_exists($class) ){
+	// 				$newclass     = new $class;
+	// 				$newoptions   = $newclass->getMainData();
+	// 				if( !empty($newoptions) && is_array($newoptions) ){
+	// 					$options[] = $newoptions;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+
+	// 	$saved = ! empty( $sidebar_data['conditions'][ absint( $index ) ]['if'] ) ? 
+	// 	            $sidebar_data['conditions'][ absint( $index ) ]['if'] : '';
+
+	// 	return '<span class="condition-label">'. __('Replace if', 'smk-sidebar-generator') .' </span>'.
+	// 		$this->html->select(
+	// 			'', // ID
+	// 			$name. '[conditions]['. absint( $index ) .'][if]', 
+	// 			$saved, 
+	// 			array(
+	// 				'options' => $options,
+	// 				'class' => array('condition-if'),
+	// 				'style'    => 'width: 100%',
+	// 			)
+	// 		);
+	// }
+
+	//------------------------------------//--------------------------------------//
+	
+	/**
+	 * Condition selector
+	 *
+	 * Display sidebar Condition main field
+	 *
+	 * @param string $name HTML field name
+	 * @param string $sidebar_data Data for current sidebar
+	 * @return string The HTML
+	 */
+	public function fieldConditionSelector(){
+
+		// $options = array( 'none' => __('None', 'smk-sidebar-generator') );
+		$options = array();
 		$all_conditions = smk_sidebar_conditions_filter();
 		if( !empty($all_conditions) && is_array($all_conditions) ){
 			foreach ($all_conditions as $type => $class) {
@@ -433,18 +527,14 @@ class Generator extends Foundation {
 			}
 		}
 
-		$saved = ! empty( $sidebar_data['conditions'][ absint( $index ) ]['if'] ) ? 
-		            $sidebar_data['conditions'][ absint( $index ) ]['if'] : '';
-
-		return '<span class="condition-label">'. __('Replace if', 'smk-sidebar-generator') .' </span>'.
-			$this->html->select(
+		return $this->html->select(
 				'', // ID
-				$name. '[conditions]['. absint( $index ) .'][if]', 
-				$saved, 
+				'', //Name
+				'', //Value
 				array(
 					'options' => $options,
-					'class' => array('condition-if'),
-					'style'    => 'width: 100%',
+					'class' => array('main-condition-selector'),
+					'style'    => 'width: 200px',
 				)
 			);
 	}
@@ -472,8 +562,8 @@ class Generator extends Foundation {
 				array(
 					'options' => $this->getEqualToOptions($type),
 					'multiple' => 'multiple',
-					'size' => 5,
-					'class' => array('condition-equalto'),
+					'size' => 1,
+					'class' => array('cond-field', 'condition-equalto'),
 					'style'    => 'width: 100%',
 				)
 			);

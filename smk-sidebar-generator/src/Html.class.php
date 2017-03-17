@@ -17,8 +17,12 @@ class Html{
 	public function select( $id = '', $name = '', $value = '', $atts = array() ){
 		$main = array(
 			'id' => $id,
-			'name' => $name,
 		);
+		
+		if( !empty($name) ){
+			$main['name'] = $name;
+		}
+
 		$all_args = wp_parse_args($atts, $main);
 
 		$field = '<select'. $this->mergeAttributes($all_args, array('value') ) .'>';

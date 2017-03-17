@@ -1,14 +1,16 @@
 <?php
 /* 
- * Plugin Name: SMK Sidebar Generator
- * Plugin URI:  https://github.com/Smartik89/Wordpress-Sidebar-Generator
- * Description: Generate an unlimited number of sidebars and assign them to any page using the conditional options without touching a single line of code. 
- * Author:      Smartik
+ * Plugin Name: Sidebar Generator by ZeroWP
+ * Plugin URI:  http://zerowp.com/sidebar-generator
+ * Description: Generate an unlimited number of sidebars and assign them to any page using the conditional options without touching a single line of code.
  * Version:     4.0
- * Author URI:  http://smartik.ws/
- * Licence:     GPLv2
- * License URI: http://www.gnu.org/licenses/gpl-2.0.html
- * Copyright:   (c) 2015 Smartik. All rights reserved
+ * Author:      ZeroWP Team
+ * Author URI:  http://zerowp.com/
+ * Version:     1.2
+ * License:     GPL-2.0+
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+ * Text Domain: smk-sidebar-generator
+ * Domain Path: /lang
  */
 
 // Do not allow direct access to this file.

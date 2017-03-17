@@ -1,6 +1,7 @@
-=== SMK Sidebar Generator ===
+=== Sidebar Generator by ZeroWP ===
+Donate link: http://paypal.me/zerowp
 Contributors: _smartik_
-Tags: sidebar, widget, generator, custom, unlimited, sidebars, widgets, conditions, replace
+Tags: sidebar, widget, generator, custom, unlimited, sidebars, widgets, conditions, replace, manage, smk, smk sidebar generator
 Requires at least: 4.4
 Tested up to: 4.7
 Stable tag: 4.0
@@ -12,8 +13,8 @@ This plugin generates as many sidebars as you need. Then allows you to place the
 == Description ==
 This plugin generates as many sidebars as you need. Then allows you to place them on any page you wish.
 
-* Development branch: https://github.com/Smartik89/Wordpress-Sidebar-Generator
-* Issue tracker: https://github.com/Smartik89/Wordpress-Sidebar-Generator/issues
+* Development branch: https://github.com/ZeroWP/Wordpress-Sidebar-Generator
+* Issue tracker: https://github.com/ZeroWP/Wordpress-Sidebar-Generator/issues
 
 ####Features:
 * Unlimited number of sidebars.

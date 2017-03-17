@@ -5,7 +5,7 @@ class ConditionCpt extends Condition{
 	public $type = 'post_type';
 
 	public function __construct(){
-		$this->name = __('is post type', 'smk-sidebar-generator');
+		$this->name = __('Post type', 'smk-sidebar-generator');
 	}
 
 	// key => value

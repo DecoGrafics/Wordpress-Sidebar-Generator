@@ -99,7 +99,9 @@
 					template.find('input, select').each(function(){
 						var name  = $(this).attr('name');
 						var value = $(this).attr('value');
-						$(this).attr( 'name', name.replace( '__id__', id ) );
+						if( $(this).is('[name]') ){
+							$(this).attr( 'name', name.replace( '__id__', id ) );
+						}
 						if( $(this).attr( 'value' ) ){
 							$(this).attr( 'value', value.replace( '__id__', id ).replace( '__index__', counter ) );
 						}
@@ -208,10 +210,12 @@
 								to_change.prepend($("<option></option>").attr("value",key).text(value)); 
 							});
 
-							$("body").append( $("<script />", {
-								id: 'condition_if_' + selected.replace("::", "_"),
-								html: response
-							}) );
+							condition_parent.find('.conditions-second').show();
+
+							// $("body").append( $("<script />", {
+							// 	id: 'condition_if_' + selected.replace("::", "_"),
+							// 	html: response
+							// }) );
 						},
 						complete: function(response){
 						}
@@ -223,17 +227,46 @@
 			conditionAdd: function(){
 				$('#smk-sidebars').on('click', '.condition-add', function( event ){
 					event.preventDefault();
-					var condition_all    = $(this).prev('.created-conditions'),
-					    _name_           = $(this).data('name'),
-					    _sidebar_id_           = $(this).data('sidebar-id'),
-						cloned_elem      = $('.smk-sidebars-condition-template .condition-parent').clone(),
-						max_index        = 0;
 
+					var _btn           = $(this),
+					conditions_all     = _btn.parents('.conditions-all'),
+					created_conditions = conditions_all.find('.created-conditions'),
+					_name_             = _btn.data('name'),
+					_sidebar_id_       = _btn.data('sidebar-id'),
+					cloned_elem        = $('.smk-sidebars-condition-template .condition-parent').clone(),
+					max_index          = 0;
+
+					var main_condition_selector = conditions_all.find('.main-condition-selector');
+					var main_condition = main_condition_selector.val();
+					
+					//If is a valid condition selected
+					if( main_condition && 'none' !== main_condition ){
+						//If this condition has been selected already, stop
+						if( created_conditions.find('.condition-if').filter( function() { 
+							var _t = $(this);
+							var $exists = _t.val() === main_condition; 
+							// console.log( _t.val() );
+							if( $exists ){
+								_t.parents('.condition-parent').addClass('warning');
+								setTimeout(function(){
+									_t.parents('.condition-parent').removeClass('warning');
+								}, 300)
+							}
+							return $exists;
+						}).length > 0 ){
+							return;
+						}
+					}	
+					else{
+						main_condition_selector.select2("open");
+						return;
+					}
 
 					// If we have incomplete conditions, do no proceed but instead ask to modify them
-					if( condition_all.find('.condition-if').filter( function() { 
+					if( created_conditions.find('.condition-if').filter( function() { 
 							var _t = $(this);
 							var $exists = _t.val() === 'none'; 
+							console.log( _t.val() );
 							if( $exists ){
 								_t.parents('.condition-parent').addClass('warning');
 								setTimeout(function(){
@@ -248,9 +281,8 @@
 					}
 
 					// All nice, create the condition
-					condition_all.find('select').each(function(){
-					var 
-						name       = $(this).attr('name'),
+					created_conditions.find('.cond-field').each(function(){
+						var name   = $(this).attr('name'),
 						this_nr    = name.match(/\[(\d+)\]/),
 						the_number = parseInt( this_nr[1], 10 );
 
@@ -259,7 +291,7 @@
 						}
 					});
 
-					cloned_elem.find('select').each(function( index, elem ){
+					cloned_elem.find('.cond-field').each(function( index, elem ){
 						var new_name  = $(elem).attr('name');
 						$(elem).attr( 'name', new_name.replace( '__cond_name__', _name_ ).replace( '__id__', _sidebar_id_ ).replace( /\[\d+\]/g, '['+ (max_index + 1) +']' ) );
 					});
@@ -267,42 +299,28 @@
 						$(this).removeAttr('selected');
 					});
 
+					cloned_elem.find('.condition-if').val( main_condition );
+					// cloned_elem.find('.conditions-second').hide();
+
 					cloned_elem.hide(); //Hide new condition
-					condition_all.append( cloned_elem ); //Appent it
+					created_conditions.append( cloned_elem ); //Appent it
 					cloned_elem.slideDown('fast'); //... and finally slide it 
 
 
 					smkSidebarGenerator.sortableconditions();
 					
 					$(document).trigger('smk-sidebar-js-refresh');
+					$(document).trigger('smk-sidebar-sign-refresh');
 				});
 			},
 			
 			// Remove a condition
 			conditionRemove: function(){
 				$('#smk-sidebars').on('click', '.condition-remove', function(){
-					if( $(this).parents('.created-conditions').find('.condition-parent').length > 1 ){
-						$(this).parents('.condition-parent').slideUp( "fast", function() {
-							$(this).remove();
-						});
-					}
-				});
-			},
-
-			// Enable conditions
-			enableConditions: function(){
-				$('#smk-sidebars').on('change', '.smk-sidebar-enable-conditions', function(){
-					var _t = $(this),
-					    _crConditions  = _t.parents('.conditions-all').children('.created-conditions'),
-					    _conditionsBtn = _t.parents('.conditions-all').children('.condition-add');
-					if( _t.is( ":checked" ) ){
-						_crConditions.removeClass('disabled-conditions');
-						_conditionsBtn.removeAttr('disabled', 'disabled');
-					}
-					else{
-						_crConditions.addClass('disabled-conditions');
-						_conditionsBtn.attr('disabled', 'disabled');
-					}
+					$(this).parents('.condition-parent').slideUp( "fast", function() {
+						$(this).remove();
+						$(document).trigger('smk-sidebar-sign-refresh');
+					});
 				});
 			},
 
@@ -314,9 +332,7 @@
 					axis: "y",
 					tolerance: "pointer",
 					handle: ".smk-sidebar-condition-icon",
-					// cancel: '.condition-clone, .condition-remove'
 				});
-				// blocks.disableSelection();
 			},
 
 			//Allow to use condition only if the user select the sidebar to replace
@@ -343,7 +359,8 @@
 
 			tooltip: function(){
 				Tipped.create('.tip', {
-					// position: 'right'
+					// position: 'right',
+					behavior: 'hide'
 				});
 			},
 			
@@ -385,6 +402,48 @@
 				});
 			},
 
+			infoSignsRefresh: function(){
+				$('#smk-sidebars .accordion-section').each( function(){
+					var li = $(this),
+					replaces_sign = li.find('.info-signs').children('[data-info="replaces"]'),
+					has_cond_sign = li.find('.info-signs').children('[data-info="has_conditions"]');
+
+					if( li.find('.sidebars-to-replace-select').val() ){
+						replaces_sign.addClass('active');
+						if( li.find('.created-conditions .condition-parent').length > 0 ){
+							has_cond_sign.addClass('active');
+						}
+						else{
+							has_cond_sign.removeClass('active');
+						}
+					}
+					else{
+						replaces_sign.removeClass('active');
+						has_cond_sign.removeClass('active');
+					}
+				});
+			},
+
+			infoSigns: function(){
+				smkSidebarGenerator.infoSignsRefresh();
+
+				Tipped.create('.info-signs span', {
+					behavior: 'hide'
+				});
+
+				$('#smk-sidebars').on( 'change', '.sidebars-to-replace-select', function(){
+					$(document).trigger('smk-sidebar-sign-refresh');
+				});
+
+				// $('#smk-sidebars').on( 'change', '.smk-sidebar-enable-conditions', function(){
+				// 	$(document).trigger('smk-sidebar-sign-refresh');
+				// });
+
+				$(document).on('smk-sidebar-sign-refresh', function(){
+					smkSidebarGenerator.infoSignsRefresh();
+				});
+			},
+
 			// Init all
 			init: function(){
 				smkSidebarGenerator.accordion();
@@ -396,12 +455,12 @@
 				smkSidebarGenerator.targetIfCondition();
 				smkSidebarGenerator.conditionAdd();
 				smkSidebarGenerator.conditionRemove();
-				smkSidebarGenerator.enableConditions();
 				smkSidebarGenerator.sortableconditions();
 				smkSidebarGenerator.allowConditions();
 				smkSidebarGenerator.tooltip();
 				smkSidebarGenerator.select2();
 				smkSidebarGenerator.sidebarTabs();
+				smkSidebarGenerator.infoSigns();
 			},
 
 		};

@@ -38,6 +38,12 @@ General view
 .smk-sidebars-container:last-of-type {
   margin-bottom: 30px;
 }
+.smk-sidebars-container .submit {
+  overflow: hidden;
+}
+.smk-sidebars-container .submit #submit {
+  float: right;
+}
 .sbg-removed-active .smk-sidebars-container.removed-sidebars {
   display: block;
 }
@@ -55,7 +61,7 @@ Head section
 */
 .smk-sidebars-list .accordion-section-title {
   position: relative;
-  padding-right: 150px;
+  padding-right: 30px;
 }
 .smk-sidebars-list .accordion-section-title .description {
   font-size: 13px;
@@ -76,14 +82,15 @@ Head section
 /* Moderate sidebar
 ------------------------------------------------*/
 .smk-sidebars-list .accordion-section-title .moderate-sidebar {
-  position: absolute;
+  position: relative;
   font-size: 13px;
   font-weight: 700;
   font-style: normal;
   color: #5F72C0;
   margin-left: 10px;
-  right: 30px;
-  top: 11px;
+  float: right;
+  right: 0;
+  top: 0;
 }
 .smk-sidebars-list .accordion-section-title .moderate-sidebar span {
   padding: 1px 7px;
@@ -117,6 +124,31 @@ Head section
 }
 #smk-removed-sidebars .accordion-section-title .moderate-sidebar .smk-restore-sidebar {
   display: inline-block;
+}
+/* Info about current sidebar
+----------------------------------*/
+.smk-sidebars-list .accordion-section-title .info-signs {
+  display: inline-block;
+  float: right;
+}
+.smk-sidebars-list .accordion-section-title .info-signs > span {
+  display: none;
+  color: #bbb;
+  margin-left: 4px;
+  font-size: 16px;
+  line-height: 20px;
+}
+.smk-sidebars-list .accordion-section-title .info-signs > span.active {
+  display: inline-block;
+}
+.smk-sidebars-list .accordion-section-title .info-signs > span[data-info="replaces"] {
+  color: #54ACD2;
+}
+.smk-sidebars-list .accordion-section-title .info-signs > span[data-info="has_conditions"] {
+  color: #D1D5D8;
+}
+#smk-removed-sidebars .accordion-section-title .info-signs {
+  display: none;
 }
 /*
 -------------------------------------------------------------------------------
@@ -221,29 +253,6 @@ Fields
 Conditions
 -------------------------------------------------------------------------------
 */
-.smk-sidebar-row .created-conditions.disabled-conditions {
-  position: relative;
-}
-.smk-sidebar-row .created-conditions.disabled-conditions,
-.smk-sidebar-row .created-conditions.disabled-conditions input,
-.smk-sidebar-row .created-conditions.disabled-conditions select,
-.smk-sidebar-row .created-conditions.disabled-conditions textarea {
-  color: #aaa;
-  border-color: #ccc;
-}
-.smk-sidebar-row .created-conditions.disabled-conditions:before {
-  content: " ";
-  display: block;
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  margin: 0;
-  padding: 0;
-  background: rgba(255, 255, 255, 0.35);
-  z-index: 10;
-}
 .smk-sidebar-row .created-conditions .condition-parent {
   -webkit-transition: background 0.5s;
   transition: background 0.5s;
@@ -308,7 +317,7 @@ Conditions
   background: #fda4a4;
 }
 .smk-sidebar-row .condition-add {
-  margin: 10px 0;
+  margin: 0;
 }
 .smk-sidebar-row .smk-sidebar-condition-icon {
   position: absolute;
@@ -344,6 +353,15 @@ Select 2
 }
 .select2-results__options li {
   margin: 0;
+}
+.sidebar-to-replace-container .select2-container--default .select2-selection--multiple .select2-selection__choice {
+  background: #3498DB;
+  border-color: #196090;
+  color: #fff;
+  border-radius: 2px;
+}
+.sidebar-to-replace-container .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+  color: #eee;
 }
 /*
 -------------------------------------------------------------------------------
