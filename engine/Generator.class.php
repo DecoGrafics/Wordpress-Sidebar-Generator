@@ -3,37 +3,50 @@ namespace SmkSidebar;
 
 class Generator extends Foundation {
 
-	public function setup(){
+	public function __construct(){
+		add_action( 'admin_menu', array( $this, 'menu' ) );
+		add_action( 'admin_init', array( $this, 'registerSetting' ) );
 		add_action( 'wp_ajax_smk-sidebar-generator_load_equalto', array( $this, 'equaltoAjax' ) );
 	}
 
 	//------------------------------------//--------------------------------------//
 	
 	/**
-	 * Plugin Settings
+	 * Menu
 	 *
-	 * Inner plugin settings.
-	 * 
-	 * @return array 
+	 * Create a new submenu for this plugin.
+	 *	
+	 * @hook admin_menu
+	 * @uses $this->page() to get the page display.
+	 * @return void 
 	 */
-	protected function pluginSettings( $key = '' ){
-		$settings = array(
-			'name'                   => __('Sidebars', 'smk-sidebar-generator'),
-			'page_name'              => __('Sidebar Generator', 'smk-sidebar-generator'),
-			'slug'                   => 'smk_sidebar_generator',
-			'version'                => $this->version,
-			'capability'             => 'manage_options',
-			'menu_parent'            => 'themes.php',
-			'option_name'            => 'smk_sidebar_generator',
-			'settings_register_name' => 'smk_sidebar_generator_register',
-		);
+	public function menu(){
+		$settings = SSGM()->config();
 
-		if( !empty($key) && array_key_exists($key, $settings) ){
-			return $settings[ $key ];
-		}
-		else{
-			return $settings;
-		}
+		add_menu_page(
+			$settings['menu_name'], 
+			$settings['menu_name'], 
+			$settings['capability'], 
+			$settings['slug'], 
+			array( $this, 'page' ) ,
+			$settings['menu_icon'], 
+			$settings['menu_priority']
+		);
+	}
+
+	//------------------------------------//--------------------------------------//
+	
+	/**
+	 * Register setting
+	 *
+	 * Register setting. This allows to update the option on form submit.
+	 *
+	 * @hook admin_init
+	 * @return void 
+	 */
+	public function registerSetting() {
+		$settings = SSGM()->config();
+		register_setting( $settings['settings_register_name'], $settings['option_name']/*, array( &$this, 'sanitizeData' )*/ );
 	}
 
 	//------------------------------------//--------------------------------------//
@@ -53,13 +66,13 @@ class Generator extends Foundation {
 			echo $this->aSingleCondition('__cond_name__', '', 0, 'all');
 		echo '</div>';
 		$this->pageOpen();
-			settings_fields( $this->pluginSettings('settings_register_name') );
+			settings_fields( SSGM()->config('settings_register_name') );
 
-			$counter = get_option( $this->pluginSettings('option_name'), array() );
+			$counter = get_option( SSGM()->config('option_name'), array() );
 			$counterval = ! empty( $counter['counter'] ) ? absint( $counter['counter'] ) : intval( '0' );
-			echo $this->html->input(
+			echo SSGM()->html->input(
 				'smk-sidebar-generator-counter', // ID
-				$this->pluginSettings( 'option_name' ) . '[counter]', 
+				SSGM()->config( 'option_name' ) . '[counter]', 
 				absint( $counterval ), 
 				array(
 					'type' => 'hidden',
@@ -73,7 +86,7 @@ class Generator extends Foundation {
 
 		//Filtered conditions
 		$conditions = array();
-		foreach ($this->allGeneratedSidebars() as $sidebar_id => $sidebar) {
+		foreach (SSGM()->allGeneratedSidebars() as $sidebar_id => $sidebar) {
 			if( !empty($sidebar['conditions']) ){
 				foreach ($sidebar['conditions'] as $condition) {
 					if( !empty($condition['if']) && !empty($condition['equalto']) && $condition['if'] !== 'none' ){
@@ -93,7 +106,7 @@ class Generator extends Foundation {
 
 		// Debug start
 		// $this->debug( $this->allStaticSidebars(), 'All static sidebars' );
-		$this->debug( $this->allGeneratedSidebars(), 'All generated sidebars' );
+		$this->debug( SSGM()->allGeneratedSidebars(), 'All generated sidebars' );
 		// global $sidebars_widgets;
 		// $this->debug( $sidebars_widgets, 'All sidebars and their widgets' );
 		// $this->debug( smk_sidebar_conditions_filter(), 'All conditions' );
@@ -112,12 +125,12 @@ class Generator extends Foundation {
 	 */
 	public function pageOpen($echo = true){
 		$html = '<div class="wrap sbg-clearfix">';
-		$html .= '<h2>'. $this->pluginSettings( 'page_name' ) .'</h2>';
+		$html .= '<h2>'. SSGM()->config( 'page_name' ) .'</h2>';
 		$html .= '<div class="smk-sidebars-container">';
 		$html .= '<h3>
 				'. __('Sidebars', 'smk-sidebar-generator') .'
 				<span class="tip dashicons-before dashicons-editor-help" title="'. __('All available sidebars.', 'smk-sidebar-generator') .'"></span>
-				<span class="add-new-h2 add-new-sidebar" data-sidebars-prefix="'. $this->prefix() .'">'. __('Add new', 'smk-sidebar-generator') .'</span>
+				<span class="add-new-h2 add-new-sidebar" data-sidebars-prefix="'. SSGM()->prefix() .'">'. __('Add new', 'smk-sidebar-generator') .'</span>
 			</h3>';
 		$html .= '<form method="post" action="options.php" class="smk-sidebar-generator_main_form">';
 		if( $echo ) { echo $html; } else { return $html; }
@@ -150,7 +163,7 @@ class Generator extends Foundation {
 	 * @return string The HTML.
 	 */
 	public function allSidebarsList($echo = true){
-		$all = $this->allGeneratedSidebars();
+		$all = SSGM()->allGeneratedSidebars();
 		$list = '<div id="smk-sidebars" class="accordion-container smk-sidebars-list">';
 		$list .= '<ul class="connected-sidebars-lists">';
 			if( !empty( $all ) ){
@@ -181,7 +194,7 @@ class Generator extends Foundation {
 	 * @return string The HTML.
 	 */
 	public function aSingleListItem($sidebar_data, $settings = false){
-		$settings = ( $settings && is_array( $settings ) ) ? $settings : $this->pluginSettings();
+		$settings = ( $settings && is_array( $settings ) ) ? $settings : SSGM()->config();
 		$name     = $settings['option_name'] .'[sidebars]['. $sidebar_data['id'] .']';
 		
 		// All pages
@@ -344,7 +357,7 @@ class Generator extends Foundation {
 	 * @return string The HTML
 	 */
 	public function fieldName($name, $sidebar_data){
-		return $this->html->input(
+		return SSGM()->html->input(
 				'', // ID
 				$name. '[name]', 
 				$sidebar_data['name'], 
@@ -368,7 +381,7 @@ class Generator extends Foundation {
 	 * @return string The HTML
 	 */
 	public function fieldId($name, $sidebar_data){
-		return $this->html->input(
+		return SSGM()->html->input(
 			'', // ID
 			$name. '[id]', 
 			$sidebar_data['id'], 
@@ -391,7 +404,7 @@ class Generator extends Foundation {
 	 * @return string The HTML
 	 */
 	public function fieldDescription($name, $sidebar_data){
-		return $this->html->input(
+		return SSGM()->html->input(
 				'', // ID
 				$name. '[description]', 
 				$sidebar_data['description'], 
@@ -426,7 +439,7 @@ class Generator extends Foundation {
 		$replace = !empty( $sidebar_data['replace'] ) ? $sidebar_data['replace'] : array();
 
 		return '<label>'. __('Sidebars to replace:', 'smk-sidebar-generator') .'</label>'. 
-			$this->html->select(
+			SSGM()->html->select(
 				'', // ID
 				$name. '[replace][]', 
 				$replace,
@@ -457,7 +470,7 @@ class Generator extends Foundation {
 		            $sidebar_data['conditions'][ absint( $index ) ]['if'] : '';
 
 		return '<span class="condition-label">'. __('Replace if', 'smk-sidebar-generator') .' </span>'.
-			$this->html->input(
+			SSGM()->html->input(
 				'', // ID
 				$name. '[conditions]['. absint( $index ) .'][if]', 
 				$saved, 
@@ -467,37 +480,6 @@ class Generator extends Foundation {
 				)
 			);
 	}
-	// public function fieldConditionMain($name, $sidebar_data, $index = 0){
-
-	// 	$options = array( 'none' => __('None', 'smk-sidebar-generator') );
-	// 	$all_conditions = smk_sidebar_conditions_filter();
-	// 	if( !empty($all_conditions) && is_array($all_conditions) ){
-	// 		foreach ($all_conditions as $type => $class) {
-	// 			if( class_exists($class) ){
-	// 				$newclass     = new $class;
-	// 				$newoptions   = $newclass->getMainData();
-	// 				if( !empty($newoptions) && is_array($newoptions) ){
-	// 					$options[] = $newoptions;
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-
-	// 	$saved = ! empty( $sidebar_data['conditions'][ absint( $index ) ]['if'] ) ? 
-	// 	            $sidebar_data['conditions'][ absint( $index ) ]['if'] : '';
-
-	// 	return '<span class="condition-label">'. __('Replace if', 'smk-sidebar-generator') .' </span>'.
-	// 		$this->html->select(
-	// 			'', // ID
-	// 			$name. '[conditions]['. absint( $index ) .'][if]', 
-	// 			$saved, 
-	// 			array(
-	// 				'options' => $options,
-	// 				'class' => array('condition-if'),
-	// 				'style'    => 'width: 100%',
-	// 			)
-	// 		);
-	// }
 
 	//------------------------------------//--------------------------------------//
 	
@@ -527,7 +509,7 @@ class Generator extends Foundation {
 			}
 		}
 
-		return $this->html->select(
+		return SSGM()->html->select(
 				'', // ID
 				'', //Name
 				'', //Value
@@ -555,7 +537,7 @@ class Generator extends Foundation {
 		$saved = ! empty( $sidebar_data['conditions'][ absint( $index ) ]['equalto'] ) ? $sidebar_data['conditions'][ absint( $index ) ]['equalto'] : '';
 
 		return '<span class="condition-label">'. __('and is equal to', 'smk-sidebar-generator') .'</span>' . 
-			$this->html->select(
+			SSGM()->html->select(
 				'', // ID
 				$name. '[conditions]['. absint( $index ) .'][equalto][]', 
 				$saved, 
@@ -647,11 +629,47 @@ class Generator extends Foundation {
 		);
 
 		$settings = array( 
-			'option_name' => $this->pluginSettings('option_name'),
+			'option_name' => SSGM()->config('option_name'),
 			'class'       => 'sidebar-template',
 		);
 		$item = $this->aSingleListItem( $sidebar_data, $settings );
 		if( $echo ) { echo $item; } else { return $item; }
+	}
+
+	//------------------------------------//--------------------------------------//
+
+	/**
+	 * Debug
+	 *
+	 * Debud saved data
+	 * 
+	 * @param array $data The data to debug.
+	 * @return string 
+	 */
+	public function debug($data = array(), $title = ''){
+		if( is_array($data) ){
+			array_walk_recursive( $data, array( $this, 'debugFilter' ) );
+		}
+		if( !empty($title) ){
+			echo '<h3>'. $title .'</h3>';
+		}
+		echo '<pre>';
+			print_r($data);
+		echo '</pre>';
+	}
+
+	//------------------------------------//--------------------------------------//
+
+	/**
+	 * Debug filter
+	 *
+	 * Debud filter special characters.
+	 * 
+	 * @param array $data The data to filter.
+	 * @return array 
+	 */
+	public function debugFilter(&$data){
+		$data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
 	}
 
 }

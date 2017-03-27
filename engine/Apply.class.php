@@ -4,7 +4,6 @@ namespace SmkSidebar;
 class Apply extends Generator{
 	
 	public function __construct(){
-		parent::__construct();
 		add_filter( 'sidebars_widgets', array( $this, 'letsDoIt') );
 	}
 

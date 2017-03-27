@@ -1,10 +1,3 @@
-/* 
-* @Author: Smartik
-* @Date:   2014-03-12 21:17:04
-* @Last Modified by:   Smartik
-* @Last Modified time: 2014-07-16 21:09:21
-*/
-
 ;(function( $ ) {
 	"use strict";
 
