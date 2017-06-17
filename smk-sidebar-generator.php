@@ -1,372 +1,227 @@
 <?php
 /* 
- * Plugin Name: Sidebar Generator and Manager by ZeroWP
- * Plugin URI:  http://zerowp.com/sidebar-generator
+ * Plugin Name: Sidebar Generator and Manager
+ * Plugin URI:  http://zerowp.com/sidebar-generator-manager
  * Description: Generate an unlimited number of sidebars and assign them to any page, using the conditional options, without touching a single line of code.
  * Author:      ZeroWP Team
  * Author URI:  http://zerowp.com/
  * License:     GPL-2.0+
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain: smk-sidebar-generator
- * Domain Path: /lang
+ * Domain Path: /languages
  *
  * Version:     4.0
  * 
  */
 
+/* No direct access allowed!
+---------------------------------*/
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-final class SmkSidebarGenerator{
+/* Plugin configuration
+----------------------------*/
+function ssgm_config( $key = false ){
+	$settings = apply_filters( 'ssgm:config_args', array(
+		
+		// Plugin data
+		'version'                               => '4.0',
+		'min_php_version'                       => '5.3',
+		
+		// The list of required plugins. 'slug' => array 'name and uri'
+		'required_plugins'                      => array(),
+		
+		// The priority in plugins loaded. Only if has required plugins
+		'priority'                              => 10,
+		
+		// Main action. You may need to change it if is an extension for another plugin.
+		'action_name'                           => 'init',
+		
+		// Plugin branding
+		'plugin_name'                           => __( 'Sidebar Generator and Manager', 'smk-sidebar-generator' ),
+		'id'                                    => 'smk-sidebar-generator',
+		'namespace'                             => 'SmkSidebar',
+		'uppercase_prefix'                      => 'SMK_SIDEBAR',
+		'lowercase_prefix'                      => 'ssgm',
+		
+		// Access to plugin directory
+		'file'                                  => __FILE__,
+		'lang_path'                             => plugin_dir_path( __FILE__ ) . 'languages',
+		'basename'                              => plugin_basename( __FILE__ ),
+		'path'                                  => plugin_dir_path( __FILE__ ),
+		'url'                                   => plugin_dir_url( __FILE__ ),
+		'uri'                                   => plugin_dir_url( __FILE__ ),//Alias
+		
+		'slug'                                  => 'smk_sidebar_generator',
+		'capability'                            => 'manage_options',
+		'option_name'                           => 'smk_sidebar_generator',
+		'settings_register_name'                => 'smk_sidebar_generator_register',
+		
+		// Menu settings
+		'menu_name'                             => __('Sidebars', 'smk-sidebar-generator'),
+		'menu_priority'                         => 60,
+		'menu_icon'                             => 'dashicons-layout',
+		
+		// Widget settings
+		'before_widget'                         => '<div id="%1$s" class="widget %2$s">',
+		'after_widget'                          => '</div>',
+		'before_title'                          => '<h3 class="widget-title">',
+		'after_title'                           => '</h3>'
 
-	/**
-	 * Plugin version.
-	 *
-	 * @var string
-	 */
-	public $version = '4.0';
+	));
 
-	/**
-	 * HTML helpers
-	 *
-	 * @var object 
-	 */
-	public $html;
-	
-	/**
-	 * This is the only instance of this class.
-	 *
-	 * @var string
-	 */
-	protected static $_instance = null;
-	
-	//------------------------------------//--------------------------------------//
-	
-	/**
-	 * Plugin instance
-	 *
-	 * Makes sure that just one instance is allowed.
-	 *
-	 * @return object 
-	 */
-	public static function instance() {
-		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self();
-		}
-		return self::$_instance;
+	// Make sure that PHP version is set to 5.3+
+	if( version_compare( $settings[ 'min_php_version' ], '5.3', '<' ) ){
+		$settings[ 'min_php_version' ] = '5.3';
 	}
 
-	//------------------------------------//--------------------------------------//
-	
-	/**
-	 * Cloning is forbidden.
-	 *
-	 * @return void 
-	 */
-	public function __clone() {
-		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'smk-sidebar-generator' ), '4.0' );
-	}
-
-	//------------------------------------//--------------------------------------//
-	
-	/**
-	 * Unserializing instances of this class is forbidden.
-	 *
-	 * @return void 
-	 */
-	public function __wakeup() {
-		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'smk-sidebar-generator' ), '4.0' );
-	}
-
-	//------------------------------------//--------------------------------------//
-	
-	/**
-	 * Plugin configuration
-	 *
-	 * @param string $key Optional. Get the config value by key.
-	 * @return mixed 
-	 */
-	public function config( $key = false ){
-		$settings = array(
-			'version'                => $this->version,
-			'page_name'              => __('Sidebar Generator', 'smk-sidebar-generator'),
-			'slug'                   => 'smk_sidebar_generator',
-			'capability'             => 'manage_options',
-			'option_name'            => 'smk_sidebar_generator',
-			'settings_register_name' => 'smk_sidebar_generator_register',
-			
-			// Menu settings
-			'menu_name'	             => __('Sidebars', 'smk-sidebar-generator'),
-			'menu_parent'            => 'themes.php',
-			'menu_priority'          => 60,
-			'menu_icon'              => 'dashicons-layout',
-
-			// Widget settings
-			'before_widget'          => '<div id="%1$s" class="widget %2$s">',
-			'after_widget'           => '</div>',
-			'before_title'           => '<h3 class="widget-title">',
-			'after_title'            => '</h3>'
-		);
-
-		if( !empty($key) && array_key_exists($key, $settings) ){
+	// Get the value by key
+	if( !empty($key) ){
+		if( array_key_exists($key, $settings) ){
 			return $settings[ $key ];
 		}
 		else{
-			return $settings;
+			return false;
 		}
 	}
 
-	//------------------------------------//--------------------------------------//
-	
-	/**
-	 * Build it!
-	 */
-	public function __construct() {
-		$this->constants();
-		$this->includeCore();
-		$this->initPlugin();
-
-		do_action( 'smk_sidebar_loaded' );
+	// Get settings
+	else{
+		return $settings;
 	}
-	
-	//------------------------------------//--------------------------------------//
-	
-	/**
-	 * Define constants
-	 *
-	 * @return void 
-	 */
-	private function constants() {
-		$this->define( 'SMK_SIDEBAR_PLUGIN_FILE', __FILE__ );
-		$this->define( 'SMK_SIDEBAR_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
-		$this->define( 'SMK_SIDEBAR_VERSION', $this->version );
+}
 
-		$this->define( 'SMK_SIDEBAR_PATH', $this->rootPath() );
-		$this->define( 'SMK_SIDEBAR_URL', $this->rootURL() );
-		$this->define( 'SMK_SIDEBAR_URI', SMK_SIDEBAR_URL );//Alias
-	}
+/* Define the current version of this plugin.
+-----------------------------------------------------------------------------*/
+define( 'SMK_SIDEBAR_VERSION',         ssgm_config( 'version' ) );
+ 
+/* Plugin constants
+------------------------*/
+define( 'SMK_SIDEBAR_PLUGIN_FILE',     ssgm_config( 'file' ) );
+define( 'SMK_SIDEBAR_PLUGIN_BASENAME', ssgm_config( 'basename' ) );
 
-	//------------------------------------//--------------------------------------//
-	
-	/**
-	 * Define a constant
-	 *
-	 * @param string $name The constant name
-	 * @param mixed $value The constant value
-	 * @return void 
-	 */
-	private function define( $name, $value ) {
-		if ( ! defined( $name ) ) {
-			define( $name, $value );
-		}
-	}
+define( 'SMK_SIDEBAR_PATH',            ssgm_config( 'path' ) );
+define( 'SMK_SIDEBAR_URL',             ssgm_config( 'url' ) );
+define( 'SMK_SIDEBAR_URI',             ssgm_config( 'url' ) ); // Alias
 
-	//------------------------------------//--------------------------------------//
-	
-	/**
-	 * Include core files
-	 *
-	 * @return void 
-	 */
-	private function includeCore() {
-		include $this->rootPath() . "autoloader.php";
-		include $this->rootPath() . "functions.php";
+/* Minimum PHP version required
+------------------------------------*/
+define( 'SMK_SIDEBAR_MIN_PHP_VERSION', ssgm_config( 'min_php_version' ) );
 
-	}
+/* Plugin Init
+----------------------*/
+final class SMK_SIDEBAR_Plugin_Init{
 
-	//------------------------------------//--------------------------------------//
-	
-	/**
-	 * Init the plugin
-	 *
-	 * @return void 
-	 */
-	private function initPlugin() {
-		register_activation_hook( __FILE__, array( $this, 'install' ) );
-
-		add_action( 'init', array( $this, 'init' ), 0 );
-		add_action( 'admin_enqueue_scripts', array( $this, 'adminAssets' ) );
-	}
-
-	//------------------------------------//--------------------------------------//
-	
-	/**
-	 * Init the plugin
-	 *
-	 * @return void 
-	 */
-	public function init() {
-		do_action( 'before_smk_sidebar_init' );
-
-		$this->loadTextDomain();
+	public function __construct(){
 		
-		$this->html = new SmkSidebar\Html;
+		$required_plugins = ssgm_config( 'required_plugins' );
+		$missed_plugins   = $this->missedPlugins();
 
-		do_action( 'smk_sidebar_init' );
-	}
+		/* The installed PHP version is lower than required.
+		---------------------------------------------------------*/
+		if ( version_compare( PHP_VERSION, SMK_SIDEBAR_MIN_PHP_VERSION, '<' ) ) {
 
-	//------------------------------------//--------------------------------------//
-	
-	/**
-	 * Localize
-	 *
-	 * @return void 
-	 */
-	public function loadTextDomain(){
-		load_plugin_textdomain( 'smk-sidebar-generator', false, dirname( plugin_basename(__FILE__) ) . '/lang' );
-	}
+			require_once SMK_SIDEBAR_PATH . 'warnings/php-warning.php';
+			new SMK_SIDEBAR_PHP_Warning;
 
-	//------------------------------------//--------------------------------------//
-	
-	/**
-	 * Assets
-	 *
-	 * Register/Enqueue global admin assets
-	 *
-	 * @return void 
-	 */
-	public function adminAssets(){
-		if( $this->isPluginPage() ){
-			$id     = 'smk-sidebar-generator';
-			$assets = $this->rootURL() . 'assets/';
-		
-			/* Tipped
-			--------------*/
-			wp_register_style( $id . '-tipped', $assets . 'tipped/tipped.css', '', '4.6.0' );
-			wp_enqueue_style( $id . '-tipped' );
-			
-			wp_register_script( $id . '-tipped', $assets . 'tipped/tipped.js', false, '4.6.0', true );
-			wp_enqueue_script( $id . '-tipped' );
-			
-			/* Select2
-			---------------*/
-			wp_register_style( $id . '-select2', $assets . 'select2/css/select2.min.css', '', '4.0.3' );
-			wp_enqueue_style( $id . '-select2' );
-			
-			wp_register_script( $id . '-select2', $assets . 'select2/js/select2.min.js', false, '4.0.3', true );
-			wp_enqueue_script( $id . '-select2' );
-			
-			/* Sidebar generator
-			-------------------------*/
-			wp_register_style( $id, $assets . 'styles.css', '', $this->version );
-			wp_enqueue_style( $id );
-			
-			wp_register_script( $id, $assets . 'scripts.js', array('jquery', 'jquery-ui-core', 'jquery-ui-sortable', 'jquery-ui-slider'), $this->version, true );
-			wp_enqueue_script( $id );
 		}
-	}
 
-	//------------------------------------//--------------------------------------//
+		/* Required plugins are not installed/activated
+		----------------------------------------------------*/
+		elseif( !empty( $required_plugins ) && !empty( $missed_plugins ) ){
 
-	/**
-	 * Actions when the plugin is installed
-	 *
-	 * @return void
-	 */
-	public function install() {
-		// TODO: Implement the migration from version 3.x to 4.0
-	}
+			require_once SMK_SIDEBAR_PATH . 'warnings/noplugin-warning.php';
+			new SMK_SIDEBAR_NoPlugin_Warning( $missed_plugins );
 
-	//------------------------------------//--------------------------------------//
+		}
 
-	/**
-	 * Get Root URL
-	 *
-	 * @return string
-	 */
-	public function rootURL(){
-		return plugin_dir_url( __FILE__ );
-	}
+		/* We require some plugins and all of them are activated
+		-------------------------------------------------------------*/
+		elseif( !empty( $required_plugins ) && empty( $missed_plugins ) ){
+			
+			add_action( 
+				'plugins_loaded', 
+				array( $this, 'getSource' ), 
+				ssgm_config( 'priority' ) 
+			);
 
-	//------------------------------------//--------------------------------------//
+		}
 
-	/**
-	 * Get Root PATH
-	 *
-	 * @return string
-	 */
-	public function rootPath(){
-		return plugin_dir_path( __FILE__ );
-	}
+		/* We don't require any plugins. Include the source directly
+		----------------------------------------------------------------*/
+		else{
 
-	//------------------------------------//--------------------------------------//
+			$this->getSource();
 
-	/**
-	 * Current user object
-	 *
-	 * @return object
-	 */
-	public function curentUser(){
-		return wp_get_current_user();
+		}
+
 	}
 
 	//------------------------------------//--------------------------------------//
 	
 	/**
-	 * Is plugin page
+	 * Get plugin source
 	 *
-	 * Determine if the current request is on plugin page from admin side. Used mainly
-	 * to enqueue scripts and styles only on this page.
-	 *
-	 * @return bool 
+	 * @return void 
 	 */
-	public function isPluginPage(){
-		return is_admin() && isset( $_GET['page'] ) && $_GET[ 'page' ] == $this->config( 'slug' );
+	public function getSource(){
+		require_once SMK_SIDEBAR_PATH . 'plugin.php';
+		
+		$components = glob( SMK_SIDEBAR_PATH .'components/*', GLOB_ONLYDIR );
+		foreach ($components as $component_path) {
+			require_once trailingslashit( $component_path ) .'component.php';
+		}
+	
 	}
 
 	//------------------------------------//--------------------------------------//
-
+	
 	/**
-	 * The prefix for sidebar ID
+	 * Missed plugins
 	 *
-	 * Generate the prefix for sidebar ID based on current WP setup
-	 * This prefix is not unique and it's changed each time the WP is updated or 
-	 * the theme is switched
-	 * 
+	 * Get an array of missed plugins
+	 *
+	 * @return array 
+	 */
+	public function missedPlugins(){
+		$required = ssgm_config( 'required_plugins' );
+		$active   = $this->activePlugins();
+		$diff     = array_diff_key( $required, $active );
+
+		return $diff;
+	}
+
+	//------------------------------------//--------------------------------------//
+	
+	/**
+	 * Active plugins
+	 *
+	 * Get an array of active plugins
+	 *
+	 * @return array 
+	 */
+	public function activePlugins(){
+		$active = get_option('active_plugins');
+		$slugs  = array();
+
+		if( !empty($active) ){
+			$slugs = array_flip( array_map( array( $this, '_filterPlugins' ), (array) $active ) );
+		}
+
+		return $slugs;
+	}
+
+	//------------------------------------//--------------------------------------//
+	
+	/**
+	 * Filter plugins callback
+	 *
 	 * @return string 
 	 */
-	public function prefix(){
-		$theme             = get_option( 'current_theme', '' );
-		$wordpress_version = get_bloginfo( 'version', '' );
-		// Make the prefix
-		$string = 's' . substr( $theme, 0, 1 ) . $wordpress_version;
-		$string = preg_replace('/[^\w-]/', '', $string);
-		return sanitize_key( strtolower( $string ) );
-	}
-
-	//------------------------------------//--------------------------------------//
-	
-	/**
-	 * All generated sidebars
-	 *
-	 * Get all generated sidebars.
-	 *
-	 * @return array
-	 */
-	public function allGeneratedSidebars(){
-		$all = get_option( $this->config('option_name'), array() );
-		if( !empty( $all['sidebars'] ) ){
-			return (array) $all['sidebars'];
-		}
-		else{
-			return array();
-		}
+	protected function _filterPlugins( $value ){
+		$plugin = explode( '/', $value );
+		return $plugin[0];
 	}
 
 }
 
-
-/*
--------------------------------------------------------------------------------
-Main plugin instance
--------------------------------------------------------------------------------
-*/
-function SSGM() {
-	return SmkSidebarGenerator::instance();
-}
-
-/*
--------------------------------------------------------------------------------
-Rock it!
--------------------------------------------------------------------------------
-*/
-SSGM();
+new SMK_SIDEBAR_Plugin_Init;

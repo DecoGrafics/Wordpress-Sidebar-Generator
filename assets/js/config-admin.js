@@ -1,13 +1,19 @@
 ;(function( $ ) {
 	"use strict";
 
-	$(document).ready(function(){
+	$.fn.ssgm_plugin = function() {
 
-		var smkSidebarGenerator = {
+		var self = false;
+
+		var _base = {
 
 			// Sidebars accordion
 			accordion: function(){
-				jQuery("#smk-sidebars").on("click", "h3.accordion-section-title", function(){
+				jQuery("#smk-sidebars").on("click", "h3.accordion-section-title", function(event){
+					if( $( event.target ).hasClass('smk-delete-sidebar') ){
+						return;
+					}
+					
 					var current = $(this);
 					
 					if( current.parents("li.accordion-section").hasClass("open") ){
@@ -32,7 +38,7 @@
 
 			// Make accordion sections sortable
 			sortableAccordionSections: function(){
-				var blocks = jQuery("#smk-sidebars ul.connected-sidebars-lists, #smk-removed-sidebars ul");
+				var blocks = jQuery("#smk-sidebars ul.connected-sidebars-lists");
 				blocks.sortable({
 					items: "> li",
 					axis: "y",
@@ -41,7 +47,7 @@
 					handle: ".smk-sidebar-section-icon",
 					// cancel: '.moderate-sidebar, .accordion-section-content',
 					start: function( event, ui ) {
-						smkSidebarGenerator.closeAllAccordionSections();
+						self.closeAllAccordionSections();
 					}
 				});
 				blocks.find('h3.accordion-section-title').disableSelection();
@@ -84,7 +90,7 @@
 					counter = counter + 1;
 					var template       = $('.sidebar-template').clone(),
 					    sidebar_prefix = $(this).data('sidebars-prefix'),
-					    id             = sidebar_prefix + counter + smkSidebarGenerator.randomID(2, 'n') + smkSidebarGenerator.randomID(3, 'l'); 
+					    id             = sidebar_prefix + counter + self.randomID(2, 'n') + self.randomID(3, 'l'); 
 					
 					template.removeClass('sidebar-template');
 
@@ -118,7 +124,7 @@
 					template.attr('id', template_id.replace( '__id__', id ))
 
 					// Close other accordion sections
-					smkSidebarGenerator.closeAllAccordionSections();
+					self.closeAllAccordionSections();
 
 					template.find(".conditions-all").hide();
 
@@ -129,7 +135,7 @@
 
 					$('#smk-sidebar-generator-counter').val( counter );
 
-					smkSidebarGenerator.hideNoSidebarsNotice();
+					self.hideNoSidebarsNotice();
 					
 					$(document).trigger('smk-sidebar-js-refresh');
 
@@ -161,59 +167,109 @@
 			// Delete sidebar
 			deleteSidebar: function(){
 				jQuery("#smk-sidebars").on("click", ".smk-delete-sidebar", function(){
+					var _bt = $(this);
 
-					$('.wrap').addClass('sbg-removed-active');// Show removed sidebars
+					// Delete it if is confirmed
+					if( _bt.hasClass('to-confirm') ){
+						$('.wrap').addClass('sbg-removed-active');// Show removed sidebars
 
-					$(this).parents('li').slideUp('fast', function() {
-						$(this).find('.accordion-section-content').hide(); 
-						$(this).appendTo('#smk-removed-sidebars ul').slideDown('fast').removeClass('open'); 
-					});
-				});
-			},
-				
-			// Restore sidebar
-			restoreSidebar: function(){
-				jQuery("#smk-removed-sidebars").on("click", ".smk-restore-sidebar", function(){
-					$(this).parents('li').slideUp('fast', function() { 
-						$(this).find('.accordion-section-content').hide(); 
-						$(this).appendTo('#smk-sidebars ul.connected-sidebars-lists').slideDown('fast').removeClass('open'); 
-					});
+						_bt.parents('li').slideUp('fast', function() {
+							_bt.remove();
+						});
+					}
+
+					//Ask confirmation
+					else{
+						_bt.addClass('to-confirm').text('Are you sure?');
+						deletion_timer(3, _bt);
+						setTimeout(function(){
+							_bt.removeClass('to-confirm').text('Delete');
+						}, 3000);
+					}
+
 				});
 			},
 
 			// Get specific options for current condition choice via ajax
 			targetIfCondition: function(){
-				jQuery("#smk-sidebars").on("change", ".condition-if", function(){
-					var condition_parent = $(this).parents('.condition-parent'),
-					    selected = $(this).val(),
-					    to_change = condition_parent.find('.condition-equalto');
-
-					to_change.empty();
-
-					jQuery.ajax({
-						type: "POST",
+				console.log('ok');
+				$('.condition-equalto').select2({
+					ajax: {
 						url: ajaxurl,
-						dataType: "json",
-						data: {
-							'action': 'smk-sidebar-generator_load_equalto',
-							'data':   { condition_if: selected }
-						},
-						success: function(response){
-							$.each(response, function(key, value) { 
-								to_change.prepend($("<option></option>").attr("value",key).text(value)); 
-							});
+						//  data: function (params) {
+						// 	var query = {
+						// 		search: params.term,
+						// 		page: params.page
+						// 	}
 
-							condition_parent.find('.conditions-second').show();
-
-							// $("body").append( $("<script />", {
-							// 	id: 'condition_if_' + selected.replace("::", "_"),
-							// 	html: response
-							// }) );
-						},
-						complete: function(response){
+						// 	// Query paramters will be ?search=[term]&page=[page]
+						// 	return query;
+						// },
+						processResults: function (data) {
+							console.log(data);
+							return {
+								results: data.items
+							};
 						}
-					});//ajax
+					}
 				});
+				// jQuery("#smk-sidebars").on("change", ".condition-if", function(){
+					
+					// jQuery.ajax({
+					// 	type: "POST",
+					// 	url: ajaxurl,
+					// 	dataType: "json",
+					// 	data: {
+					// 		'action': 'smk-sidebar-generator_load_equalto',
+					// 		'data':   { condition_if: selected }
+					// 	},
+					// 	success: function(response){
+					// 		$.each(response, function(key, value) { 
+					// 			to_change.prepend($("<option></option>").attr("value",key).text(value)); 
+					// 		});
+
+					// 		condition_parent.find('.conditions-second').show();
+
+					// 		// $("body").append( $("<script />", {
+					// 		// 	id: 'condition_if_' + selected.replace("::", "_"),
+					// 		// 	html: response
+					// 		// }) );
+					// 	},
+					// 	complete: function(response){
+					// 	}
+					// });//ajax
+				// });
+				// jQuery("#smk-sidebars").on("change", ".condition-if", function(){
+				// 	var condition_parent = $(this).parents('.condition-parent'),
+				// 	    selected = $(this).val(),
+				// 	    to_change = condition_parent.find('.condition-equalto');
+
+				// 	to_change.empty();
+
+				// 	jQuery.ajax({
+				// 		type: "POST",
+				// 		url: ajaxurl,
+				// 		dataType: "json",
+				// 		data: {
+				// 			'action': 'smk-sidebar-generator_load_equalto',
+				// 			'data':   { condition_if: selected }
+				// 		},
+				// 		success: function(response){
+				// 			$.each(response, function(key, value) { 
+				// 				to_change.prepend($("<option></option>").attr("value",key).text(value)); 
+				// 			});
+
+				// 			condition_parent.find('.conditions-second').show();
+
+				// 			// $("body").append( $("<script />", {
+				// 			// 	id: 'condition_if_' + selected.replace("::", "_"),
+				// 			// 	html: response
+				// 			// }) );
+				// 		},
+				// 		complete: function(response){
+				// 		}
+				// 	});//ajax
+				// });
 			},
 
 			// Clone a condition. Mainly used to add new condition. That's a fake clone
@@ -255,24 +311,6 @@
 						return;
 					}
 
-					// If we have incomplete conditions, do no proceed but instead ask to modify them
-					if( created_conditions.find('.condition-if').filter( function() { 
-							var _t = $(this);
-							var $exists = _t.val() === 'none'; 
-							console.log( _t.val() );
-							if( $exists ){
-								_t.parents('.condition-parent').addClass('warning');
-								setTimeout(function(){
-									_t.parents('.condition-parent').removeClass('warning');
-								}, 300)
-							}
-							return $exists;
-						}).length > 0
-					){
-						// console.log( 'nones exist' );
-						return;
-					}
-
 					// All nice, create the condition
 					created_conditions.find('.cond-field').each(function(){
 						var name   = $(this).attr('name'),
@@ -293,14 +331,21 @@
 					});
 
 					cloned_elem.find('.condition-if').val( main_condition );
-					// cloned_elem.find('.conditions-second').hide();
+
+					cloned_elem.find('.condition-equalto').attr('data-main-cond', main_condition);;
+					
+					var cond =  smk_sidebar_config.conditions_selector[ main_condition.split('::')[0] ];
+					var cond_info =  cond['label'];
+					var cond_info_type =  cond['options'][ main_condition ];
+					cloned_elem.find('.conditions-first').children('.cond-info').html( cond_info +': <em>'+ cond_info_type +'</em>' );
 
 					cloned_elem.hide(); //Hide new condition
+					created_conditions.children('.condition-placeholder').remove(); //Remove the notice if exists
 					created_conditions.append( cloned_elem ); //Appent it
 					cloned_elem.slideDown('fast'); //... and finally slide it 
 
 
-					smkSidebarGenerator.sortableconditions();
+					self.sortableconditions();
 					
 					$(document).trigger('smk-sidebar-js-refresh');
 					$(document).trigger('smk-sidebar-sign-refresh');
@@ -418,7 +463,7 @@
 			},
 
 			infoSigns: function(){
-				smkSidebarGenerator.infoSignsRefresh();
+				self.infoSignsRefresh();
 
 				Tipped.create('.info-signs span', {
 					behavior: 'hide'
@@ -433,34 +478,98 @@
 				// });
 
 				$(document).on('smk-sidebar-sign-refresh', function(){
-					smkSidebarGenerator.infoSignsRefresh();
+					self.infoSignsRefresh();
 				});
 			},
 
-			// Init all
-			init: function(){
-				smkSidebarGenerator.accordion();
-				smkSidebarGenerator.sortableAccordionSections();
-				smkSidebarGenerator.addNew();
-				smkSidebarGenerator.liveSet();
-				smkSidebarGenerator.deleteSidebar();
-				smkSidebarGenerator.restoreSidebar();
-				smkSidebarGenerator.targetIfCondition();
-				smkSidebarGenerator.conditionAdd();
-				smkSidebarGenerator.conditionRemove();
-				smkSidebarGenerator.sortableconditions();
-				smkSidebarGenerator.allowConditions();
-				smkSidebarGenerator.tooltip();
-				smkSidebarGenerator.select2();
-				smkSidebarGenerator.sidebarTabs();
-				smkSidebarGenerator.infoSigns();
-			},
+			/*
+			-------------------------------------------------------------------------------
+			Construct plugin
+			-------------------------------------------------------------------------------
+			*/
+			__construct: function(){
+				self = this;
+
+				self.accordion();
+				self.sortableAccordionSections();
+				self.addNew();
+				self.liveSet();
+				self.deleteSidebar();
+				self.targetIfCondition();
+				self.conditionAdd();
+				self.conditionRemove();
+				self.sortableconditions();
+				self.allowConditions();
+				self.tooltip();
+				self.select2();
+				self.sidebarTabs();
+				self.infoSigns();
+				
+				return this;
+			}
 
 		};
 
-		// Construct the object
-		smkSidebarGenerator.init();
+		/*
+		-------------------------------------------------------------------------------
+		Rock it!
+		-------------------------------------------------------------------------------
+		*/
+		_base.__construct();
 
-	}); //document ready
+	};
+
+
+	function deletion_timer(duration, display) {
+		var timer_span = display.find('.timer'),
+			start = Date.now(),
+			diff,
+			minutes,
+			seconds;
+		
+		//Create timer span if it does not exists
+		if( timer_span.length < 1 ){
+			display.append( ' <span class="timer">0s</span>' );
+		}
+
+		//Find the timer span again(in case if it has been create just before)
+		var timer_span = display.find('.timer');
+
+		//Timer fn for interval
+		function timer() {
+			// get the number of seconds that have elapsed since 
+			// deletion_timer() was called
+			diff = duration - (((Date.now() - start) / 1000) | 0);
+
+			// does the same job as parseInt truncates the float
+			minutes = (diff / 60) | 0;
+			seconds = (diff % 60) | 0;
+
+			minutes = minutes < 10 ? "0" + minutes : minutes;
+			seconds = seconds < 10 ? "0" + seconds : seconds;
+
+			var the_time = ( diff > 59 ) ? minutes + "m " + seconds + "s" : diff + "s";
+
+			timer_span.text( the_time ); 
+
+			if (diff <= 0) {
+				// add one second so that the count down starts at the full duration
+				// example 05:00 not 04:59
+				start = Date.now() + 1000;
+			}
+		};
+		// we don't want to wait a full second before the timer starts
+		timer();
+		setInterval(timer, 1000);
+
+		setTimeout(function(){
+			display.find('.timer').remove();
+		}, duration*1000);
+	}
+
+
+	$(document).on( 'ready load', function(){
+		$('body').ssgm_plugin();
+	});
 
 })(jQuery);

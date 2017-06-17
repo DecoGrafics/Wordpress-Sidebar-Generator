@@ -18,7 +18,7 @@ General view
 	display: block;
 	float: left;
 	width: 100%;
-	margin: 0;
+	margin: 20px 0;
 	max-width: 1000px;
 	
 	&.removed-sidebars{
@@ -29,18 +29,15 @@ General view
 		color: #777;
 	}
 
-	&:first-of-type{
-		margin-top: 10px;
+}
+.sbg-submit-block{
+	&:after {
+		content: "";
+		display: table;
+		clear: both;
 	}
-	&:last-of-type{
-		margin-bottom: 30px;
-	}
-
-	.submit{
-		overflow: hidden;
-		#submit{
-			float: right;
-		}
+	.save-sidebars{
+		float: right;
 	}
 }
 .sbg-removed-active .smk-sidebars-container.removed-sidebars{
@@ -103,9 +100,13 @@ Head section
 .smk-sidebars-list .accordion-section-title .moderate-sidebar .smk-delete-sidebar{
 	color: #CF0018;
 }
-.smk-sidebars-list .accordion-section-title .moderate-sidebar .smk-delete-sidebar:hover{
+.smk-sidebars-list .accordion-section-title .moderate-sidebar .smk-delete-sidebar:hover,
+.smk-sidebars-list .accordion-section-title .moderate-sidebar .smk-delete-sidebar.to-confirm{
 	color: #fff;
 	background: #CF0018;
+}
+.smk-sidebars-list .accordion-section-title .moderate-sidebar .smk-delete-sidebar.to-confirm{
+	font-weight: 400;
 }
 
 /* Restore
@@ -246,13 +247,20 @@ Content section
 
 // "Add new" button
 // ------------------------
-.add-new-h2.add-new-sidebar{
-	margin: 0 7px;
-	border-radius: 2px;
+.button.add-new-sidebar{
+	margin: 0 7px 0 0;
 	top: 0;
 	cursor: pointer;
+	border-color: #34495E;
+	box-shadow: none;
+	background: #fff;
+	color: #34495E;
+	&:hover{
+		background: #34495E;
+		color: #fff;
+		border-color: transparent;
+	}
 }
-.add-new-sidebar:hover{}
 
 /*
 -------------------------------------------------------------------------------
@@ -273,15 +281,24 @@ Fields
 Conditions
 -------------------------------------------------------------------------------
 */
+.smk-sidebar-row .created-conditions{
+	border: 1px solid #eee;
+	background: #fafafa;
+	min-height: 30px;
+}
 .smk-sidebar-row .created-conditions .condition-parent{
 	-webkit-transition: background 0.5s;
 	transition: background 0.5s;
+	border-bottom: 1px solid #eee;
 }
 .smk-sidebar-row .created-conditions .condition-parent:nth-child(odd){
-	background: #fafafa;
-	border: 1px solid #eee;
-	border-left: 0;
-	border-right: 0;
+	background: #fefefe;
+}
+.smk-sidebar-row .created-conditions .condition-parent:nth-child(even){
+	background: #f8f8f8;
+}
+.smk-sidebar-row .created-conditions .condition-parent:last-of-type{
+	border-bottom: 0
 }
 .smk-sidebar-row .created-conditions .condition-parent{
 	position: relative;
@@ -293,6 +310,18 @@ Conditions
 	width: 28%;
 	vertical-align: top;
 	padding-right: 2%;
+	.cond-info{
+		font-weight: 700;
+	}
+	em{
+		display: inline-block;
+		padding: 0 4px;
+		border-radius: 2px;
+		background: #71BA51;
+		color: #fff;
+		font-style: normal;
+		font-weight: 400;
+	}
 }
 .smk-sidebar-row .created-conditions .condition-parent > .conditions-second{
 	display: inline-block;
@@ -343,8 +372,8 @@ Conditions
 	position: absolute;
 	display: block;
 	height: 100%;
-	left: 0;
-	top: 0;
+	left: 4px;
+	top: 2px;
 	bottom: 0;
 	padding: 3px 0;
 	color: #aaa;
@@ -352,6 +381,17 @@ Conditions
 }
 .smk-sidebar-row .smk-sidebar-condition-icon:hover{
 	color: #82B82B;
+}
+.smk-sidebar-row .created-conditions{
+	.condition-placeholder{
+		display: block;
+		padding: 10px;
+		text-align: center;
+		span{
+			font-size: 14px;
+			color: #999;
+		}
+	}
 }
 
 /*
@@ -388,6 +428,25 @@ Select 2
 	.select2-container--default .select2-selection--multiple .select2-selection__choice__remove{
 		color: #eee;
 	}
+}
+
+.select2-results__options{
+	.select2-results__group{
+		font-weight: 700;
+		font-size: 14px;
+		// text-transform: uppercase;
+	}
+	.select2-results__option{
+		padding-top: 3px;
+		padding-bottom: 3px;
+	}
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #71BA51;
+    color: white;
+}
+.select2-container--default .select2-results>.select2-results__options{
+	max-height: 400px;
 }
 
 /*
